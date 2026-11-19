@@ -328,7 +328,8 @@ class EchonetClimate(ClimateEntity):
         if hvac_mode is not None:
             await self.async_set_hvac_mode(hvac_mode)
 
-        settemp = self._normalize_settemp(kwargs.get(ATTR_TEMPERATURE))
+        # settemp = self._normalize_settemp(kwargs.get(ATTR_TEMPERATURE))
+        settemp = kwargs.get(ATTR_TEMPERATURE)
         if kwargs.get(ATTR_TEMPERATURE) is not None:
             await self._connector._instance.setOperationalTemperature(settemp)
 
