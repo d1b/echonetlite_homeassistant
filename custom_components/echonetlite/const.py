@@ -51,6 +51,7 @@ from pychonet.lib.const import (
     ENL_FAULT_DESCRIPTION,
     ENL_FAULT_STATUS,
     ENL_INSTANTANEOUS_POWER,
+    ENL_POWER_SAVING,
 )
 from pychonet.lib.epc_functions import DATA_STATE_CLOSE, DATA_STATE_OPEN
 from pychonet.CeilingFan import (
@@ -93,6 +94,8 @@ TYPE_TIME = "time"
 TYPE_NUMBER = "number"
 TYPE_DATA_DICT = "type_data_dict"
 TYPE_DATA_ARRAY_WITH_SIZE_OPCODE = "type_data_array_with_size_opcode"
+TYPE_DATA_ARRAY_WITH_DICT_ITEMS = "type_data_array_with_dict_items"
+TYPE_DATA_DICT_OVERRIDES = "type_data_dict_overrides"
 SERVICE_SET_ON_TIMER_TIME = "set_on_timer_time"
 SERVICE_SET_INT_1B = "set_value_int_1b"
 OPEN = "open"
@@ -137,7 +140,27 @@ ENL_SUPER_CODES = {
         CONF_TYPE: SensorDeviceClass.ENUM,
         TYPE_DATA_DICT: ["fault classification", "error code"],
     },
+    ENL_POWER_SAVING: {},
 }
+
+TYPE_MEASUREMENT_CHANNEL = {
+    CONF_STATE_CLASS: SensorStateClass.MEASUREMENT,
+    TYPE_DATA_DICT: ["electric_energy_kwh", "current_r_phase_a", "current_t_phase_a"],
+    TYPE_DATA_DICT_OVERRIDES: {
+        "electric_energy_kwh": {
+            CONF_TYPE: SensorDeviceClass.ENERGY,
+            CONF_UNIT_OF_MEASUREMENT: UnitOfEnergy.KILO_WATT_HOUR,
+        },
+        "current_r_phase_a": {
+            CONF_TYPE: SensorDeviceClass.CURRENT,
+        },
+        "current_t_phase_a": {
+            CONF_TYPE: SensorDeviceClass.CURRENT,
+        },
+    },
+}
+
+TYPE_0287_CHANNEL_RANGE = {TYPE_DATA_DICT: ["start_channel", "range"]}
 
 ENL_SUPER_ENERGES = {ENL_INSTANTANEOUS_POWER, ENL_CUMULATIVE_POWER}
 
@@ -259,7 +282,7 @@ ENL_OP_CODES = {
             0xD2: {
                 CONF_UNIT_OF_MEASUREMENT: UnitOfTime.SECONDS,
                 TYPE_NUMBER: {
-                    CONF_MAXIMUM: 0x00,
+                    CONF_MINIMUM: 0x00,
                     CONF_MAXIMUM: 0xFD,
                 },
             },  # Operation time
@@ -277,7 +300,7 @@ ENL_OP_CODES = {
             0xD2: {
                 CONF_UNIT_OF_MEASUREMENT: UnitOfTime.SECONDS,
                 TYPE_NUMBER: {
-                    CONF_MAXIMUM: 0x00,
+                    CONF_MINIMUM: 0x00,
                     CONF_MAXIMUM: 0xFD,
                 },
             },  # Operation time
@@ -295,7 +318,7 @@ ENL_OP_CODES = {
             0xD2: {
                 CONF_UNIT_OF_MEASUREMENT: UnitOfTime.SECONDS,
                 TYPE_NUMBER: {
-                    CONF_MAXIMUM: 0x00,
+                    CONF_MINIMUM: 0x00,
                     CONF_MAXIMUM: 0xFD,
                 },
             },  # Operation time
@@ -313,7 +336,7 @@ ENL_OP_CODES = {
             0xD2: {
                 CONF_UNIT_OF_MEASUREMENT: UnitOfTime.SECONDS,
                 TYPE_NUMBER: {
-                    CONF_MAXIMUM: 0x00,
+                    CONF_MINIMUM: 0x00,
                     CONF_MAXIMUM: 0xFD,
                 },
             },  # Operation time
@@ -331,7 +354,7 @@ ENL_OP_CODES = {
             0xD2: {
                 CONF_UNIT_OF_MEASUREMENT: UnitOfTime.SECONDS,
                 TYPE_NUMBER: {
-                    CONF_MAXIMUM: 0x00,
+                    CONF_MINIMUM: 0x00,
                     CONF_MAXIMUM: 0xFD,
                 },
             },  # Operation time
@@ -349,7 +372,7 @@ ENL_OP_CODES = {
             0xD2: {
                 CONF_UNIT_OF_MEASUREMENT: UnitOfTime.SECONDS,
                 TYPE_NUMBER: {
-                    CONF_MAXIMUM: 0x00,
+                    CONF_MINIMUM: 0x00,
                     CONF_MAXIMUM: 0xFD,
                 },
             },  # Operation time
@@ -367,7 +390,7 @@ ENL_OP_CODES = {
             0xD2: {
                 CONF_UNIT_OF_MEASUREMENT: UnitOfTime.SECONDS,
                 TYPE_NUMBER: {
-                    CONF_MAXIMUM: 0x00,
+                    CONF_MINIMUM: 0x00,
                     CONF_MAXIMUM: 0xFD,
                 },
             },  # Operation time
@@ -947,6 +970,7 @@ ENL_OP_CODES = {
             0xC2: {
                 CONF_DISABLED_DEFAULT: True,
             },
+            # 0xB2: TYPE_0287_CHANNEL_RANGE,
             0xB3: {
                 CONF_TYPE: SensorDeviceClass.ENERGY,
                 CONF_STATE_CLASS: SensorStateClass.TOTAL_INCREASING,
@@ -954,11 +978,26 @@ ENL_OP_CODES = {
                 TYPE_DATA_ARRAY_WITH_SIZE_OPCODE: 0xB1,
                 CONF_MULTIPLIER_OPCODE: 0xC2,
             },
+            0xB6: TYPE_0287_CHANNEL_RANGE,
             0xB7: {
                 CONF_TYPE: SensorDeviceClass.POWER,
                 CONF_STATE_CLASS: SensorStateClass.MEASUREMENT,
                 TYPE_DATA_ARRAY_WITH_SIZE_OPCODE: 0xB1,
             },
+            0xB9: TYPE_0287_CHANNEL_RANGE,
+            # 0xBA: {
+            #         CONF_TYPE: SensorDeviceClass.ENERGY,
+            #         CONF_STATE_CLASS: SensorStateClass.TOTAL_INCREASING,
+            #         CONF_UNIT_OF_MEASUREMENT: UnitOfEnergy.KILO_WATT_HOUR,
+            #         CONF_DISABLED_DEFAULT: True,  # This will now work
+            # },
+            # 0xBB: TYPE_0287_CHANNEL_RANGE,
+            # 0xBD: TYPE_0287_CHANNEL_RANGE,
+            # 0xBE: {
+            #     CONF_TYPE: SensorDeviceClass.POWER,
+            #     CONF_STATE_CLASS: SensorStateClass.MEASUREMENT,
+            #     TYPE_DATA_ARRAY_WITH_SIZE_OPCODE: 0xB8,  # Number of measurement channels (duplex)
+            # },
             0xC0: {
                 CONF_TYPE: SensorDeviceClass.ENERGY,
                 CONF_STATE_CLASS: SensorStateClass.TOTAL_INCREASING,
@@ -987,6 +1026,38 @@ ENL_OP_CODES = {
                 TYPE_DATA_DICT: ["r_sn_voltage", "sn_t_voltage"],
                 CONF_DISABLED_DEFAULT: True,
             },
+            # 0xD0: TYPE_MEASUREMENT_CHANNEL,
+            # 0xD1: TYPE_MEASUREMENT_CHANNEL,
+            # 0xD2: TYPE_MEASUREMENT_CHANNEL,
+            # 0xD3: TYPE_MEASUREMENT_CHANNEL,
+            # 0xD4: TYPE_MEASUREMENT_CHANNEL,
+            # 0xD5: TYPE_MEASUREMENT_CHANNEL,
+            # 0xD6: TYPE_MEASUREMENT_CHANNEL,
+            # 0xD7: TYPE_MEASUREMENT_CHANNEL,
+            # 0xD8: TYPE_MEASUREMENT_CHANNEL,
+            # 0xD9: TYPE_MEASUREMENT_CHANNEL,
+            # 0xDA: TYPE_MEASUREMENT_CHANNEL,
+            # 0xDB: TYPE_MEASUREMENT_CHANNEL,
+            # 0xDC: TYPE_MEASUREMENT_CHANNEL,
+            # 0xDD: TYPE_MEASUREMENT_CHANNEL,
+            # 0xDE: TYPE_MEASUREMENT_CHANNEL,
+            # 0xDF: TYPE_MEASUREMENT_CHANNEL,
+            # 0xE0: TYPE_MEASUREMENT_CHANNEL,
+            # 0xE1: TYPE_MEASUREMENT_CHANNEL,
+            # 0xE2: TYPE_MEASUREMENT_CHANNEL,
+            # 0xE3: TYPE_MEASUREMENT_CHANNEL,
+            # 0xE4: TYPE_MEASUREMENT_CHANNEL,
+            # 0xE5: TYPE_MEASUREMENT_CHANNEL,
+            # 0xE6: TYPE_MEASUREMENT_CHANNEL,
+            # 0xE7: TYPE_MEASUREMENT_CHANNEL,
+            # 0xE8: TYPE_MEASUREMENT_CHANNEL,
+            # 0xE9: TYPE_MEASUREMENT_CHANNEL,
+            # 0xEA: TYPE_MEASUREMENT_CHANNEL,
+            # 0xEB: TYPE_MEASUREMENT_CHANNEL,
+            # 0xEC: TYPE_MEASUREMENT_CHANNEL,
+            # 0xED: TYPE_MEASUREMENT_CHANNEL,
+            # 0xEE: TYPE_MEASUREMENT_CHANNEL,
+            # 0xEF: TYPE_MEASUREMENT_CHANNEL,
         },
         0x88: {  # Low voltage smart electric energy meter
             0xD3: {
@@ -1273,7 +1344,7 @@ ENABLE_SUPER_ENERGY_DEFAULT = {
 }
 
 # Some entities that overlap with control entities are excluded from setup
-NON_SETUP_SINGLE_ENYITY = {
+NON_SETUP_SINGLE_ENTITY = {
     0x01: {
         # Home Air Conditioner
         0x30: {ENL_HVAC_MODE, ENL_HVAC_SET_TEMP, ENL_HVAC_SILENT_MODE},
@@ -1405,13 +1476,43 @@ USER_OPTIONS = {
     OPTION_HA_UI_SWING: {"option": OPTION_HA_UI_SWING, "option_list": []},
 }
 
+DEFAULT_CLIMATE_TEMPERATURES = {
+    "heat": {"min": 16, "max": 30},
+    "cool": {"min": 18, "max": 27},
+    "auto": {"min": 16, "max": 30},
+}
+
 TEMP_OPTIONS = {
-    "min_temp_heat": {"min": 10, "max": 25, "default": 16},
-    "max_temp_heat": {"min": 18, "max": 30, "default": 30},
-    "min_temp_cool": {"min": 15, "max": 25, "default": 16},
-    "max_temp_cool": {"min": 18, "max": 30, "default": 30},
-    "min_temp_auto": {"min": 15, "max": 25, "default": 16},
-    "max_temp_auto": {"min": 18, "max": 30, "default": 30},
+    "min_temp_heat": {
+        "min": 10,
+        "max": 25,
+        "default": DEFAULT_CLIMATE_TEMPERATURES["heat"]["min"],
+    },
+    "max_temp_heat": {
+        "min": 18,
+        "max": 30,
+        "default": DEFAULT_CLIMATE_TEMPERATURES["heat"]["max"],
+    },
+    "min_temp_cool": {
+        "min": 15,
+        "max": 25,
+        "default": DEFAULT_CLIMATE_TEMPERATURES["cool"]["min"],
+    },
+    "max_temp_cool": {
+        "min": 18,
+        "max": 30,
+        "default": DEFAULT_CLIMATE_TEMPERATURES["cool"]["max"],
+    },
+    "min_temp_auto": {
+        "min": 15,
+        "max": 25,
+        "default": DEFAULT_CLIMATE_TEMPERATURES["auto"]["min"],
+    },
+    "max_temp_auto": {
+        "min": 18,
+        "max": 30,
+        "default": DEFAULT_CLIMATE_TEMPERATURES["auto"]["max"],
+    },
 }
 
 MISC_OPTIONS = {
